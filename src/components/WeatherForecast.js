@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -56,19 +56,18 @@ const WeatherForecast = () => {
 
   const fetchLocationAndWeather = () => {
     Geolocation.getCurrentPosition(
-      (position) => {
-        // console.log(position?.coords?.latitude,position?.coords?.longitude);
-        const { latitude, longitude } = position?.coords;
+      position => {
+        const {latitude, longitude} = position?.coords;
         dispatch(request_weather_data({latitude, longitude}));
       },
-      (error) => {
+      error => {
         console.error(error.code, error.message);
         dispatch(request_weather_data(selectedCity));
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
     );
   };
-  
+
   useEffect(() => {
     check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then(result => {
       if (result === RESULTS.GRANTED) {
@@ -79,7 +78,7 @@ const WeatherForecast = () => {
     });
   }, [dispatch]);
 
-  const saveSelectedLanguage = async (index) => {
+  const saveSelectedLanguage = async index => {
     try {
       await AsyncStorage.setItem('LANG', index.toString());
       setSelectedLanguage(index);
@@ -100,19 +99,22 @@ const WeatherForecast = () => {
   };
   useEffect(() => {
     fetchStoredLanguage();
-  },[])
+  }, []);
 
-  const changeCity = (city, state) => {
-    setSelectedCity(city);
-    setSelectedState(state);
-    dispatch(request_weather_data(city));
-  };
+  const changeCity = useCallback(
+    (city, state) => {
+      setSelectedCity(city);
+      setSelectedState(state);
+      dispatch(request_weather_data(city));
+    },
+    [dispatch],
+  );
 
-  const celsiusToFahrenheit = celsius => {
+  const celsiusToFahrenheit = useCallback(celsius => {
     return (celsius * 9) / 5 + 32;
-  };
+  }, []);
 
-  const renderCurrentWeatherCards = ({item}) => {
+  const RenderCurrentWeatherCards = React.memo(({item}) => {
     const today = new Date();
     const cardDate = new Date(item?.datetime);
 
@@ -161,7 +163,7 @@ const WeatherForecast = () => {
         </Text>
       </TouchableOpacity>
     );
-  };
+  });
 
   const renderHourlyInfo = ({item, index}) => {
     const temp =
@@ -234,15 +236,15 @@ const WeatherForecast = () => {
         ) : (
           <>
             {weather_data && (
-              <View style={styles.scrollFlat}>
-                <FlatList
-                  data={weather_data?.days}
-                  renderItem={renderCurrentWeatherCards}
-                  showsHorizontalScrollIndicator={false}
-                  keyExtractor={item => item.datetime}
-                  horizontal
-                />
-              </View>
+              <FlatList
+                data={weather_data.days}
+                renderItem={({item}) => (
+                  <RenderCurrentWeatherCards item={item} />
+                )}
+                keyExtractor={item => item.datetime}
+                showsHorizontalScrollIndicator={false}
+                horizontal
+              />
             )}
 
             {getSelectedDay && (
@@ -259,7 +261,6 @@ const WeatherForecast = () => {
                     temperatureUnit === 'F'
                       ? celsiusToFahrenheit(getSelectedDay.feelslike)
                       : getSelectedDay.feelslike,
-                      
                 }}
               />
             )}
@@ -371,12 +372,13 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 20,
     width: '100%',
-    marginBottom: 70,
+    marginBottom: 125,
   },
   toggle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     margin: 5,
+    marginTop:10
   },
   toggleContainer: {
     flexDirection: 'row',
