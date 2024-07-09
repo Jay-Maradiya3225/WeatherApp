@@ -4,6 +4,8 @@ import { COLORS } from '../Assets/theme/COLOR';
 import { AppImages } from '../Assets/Images';
 import LinearGradient from 'react-native-linear-gradient';
 import { getWeatherIcon } from '../utils';
+import { getTranslation } from './WeatherForecast';
+import {translation} from '../utils/language';
 const windowWidth = Dimensions.get('window').width;
 
 const CurrentWeather = ({ currentWeather }) => {
@@ -27,13 +29,13 @@ const CurrentWeather = ({ currentWeather }) => {
             <Text style={styles.currentTime}>{currentTime}</Text>
           </View>
         </View>
-        <View style={{ marginTop: 12, width: '40%' }}>
-          <Text style={styles.todayTemp}>{currentWeather.temp}°C</Text>
+        <View style={{ marginTop: 12, width: '44%' }}>
+          <Text style={styles.todayTemp}>{`${currentWeather?.temp?.toFixed(1)}° ${currentWeather?.temperatureUnit}`}</Text>
           <Text style={styles.feelsLike}>
-            Feel like {currentWeather.feelslike}
+          {getTranslation(translation, currentWeather?.selectedLanguage, 7)} {currentWeather.feelslike}
           </Text>
           <Image
-            source={AppImages.windWave}
+            source={AppImages.windWave}    
             style={styles.windWavePng}
           />
         </View>

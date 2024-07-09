@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   View,
@@ -7,29 +7,69 @@ import {
   FlatList,
   StyleSheet,
   Dimensions,
+  TextInput,
 } from 'react-native';
-import {COLORS} from '../Assets/theme/COLOR';
-import {cities, states} from '../Assets/theme/appDataConfig';
+import { COLORS } from '../Assets/theme/COLOR';
+import { cities, states } from '../Assets/theme/appDataConfig';
+import { getTranslation } from './WeatherForecast';
+import { translation } from '../utils/language';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const CitySelectorModal = ({visible, onClose}) => {
-  const renderStates = ({item}) => (
+const CitySelectorModal = ({ visible, onClose, onSelectCity,selectedLanguage }) => {
+  const [searchCity, setSearchCity] = useState('');
+  const [filteredStates, setFilteredStates] = useState(states);
+  const [filteredCities, setFilteredCities] = useState([]);
+
+  const handleSearch = (text) => {
+    setSearchCity(text);
+    if (text.trim() === '') {
+      setFilteredStates(states);
+      setFilteredCities([]);
+    } else {
+      const filteredCities = cities.filter(city =>
+        city.name.toLowerCase().includes(text.toLowerCase())
+      );
+      const stateIds = filteredCities.map(city => city.stateId);
+      const uniqueStateIds = Array.from(new Set(stateIds));
+      const filteredStates = states.filter(state =>
+        uniqueStateIds.includes(state.id)
+      );
+      setFilteredStates(filteredStates);
+      setFilteredCities(filteredCities);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSearchCity('');
+    setFilteredStates(states);
+    setFilteredCities([]);
+    onClose();
+  };
+
+  const handleCitySelection = (city, stateId) => {
+    const stateName = states.find(state => state.id === stateId)?.name;
+    onSelectCity(city, stateName);
+    handleCloseModal();
+  };
+
+  const renderStates = ({ item }) => (
     <View>
       <Text style={styles.stateName}>{item.name}</Text>
       <View style={styles.cityInfoContent}>
         <FlatList
-          data={cities.filter(city => city.stateId === item.id)}
-          renderItem={renderCities}
-          keyExtractor={item => item.id.toString()}
+          data={filteredCities.length > 0 ? filteredCities.filter(city => city.stateId === item.id) : cities.filter(city => city.stateId === item.id)}
+          renderItem={renderCities(item.id)}
+          keyExtractor={city => city.id.toString()}
           showsVerticalScrollIndicator={false}
         />
       </View>
     </View>
   );
 
-  const renderCities = ({item}) => (
-    <TouchableOpacity onPress={() => {}}>
+  const renderCities = (stateId) => ({ item }) => (
+    <TouchableOpacity onPress={() => handleCitySelection(item.name, stateId)}>
       <Text style={styles.cityName}>{item.name}</Text>
     </TouchableOpacity>
   );
@@ -42,15 +82,21 @@ const CitySelectorModal = ({visible, onClose}) => {
       onRequestClose={onClose}>
       <View style={styles.modalContent}>
         <View style={styles.regionInfoContent}>
-          <Text style={styles.modalHeaderText}>Select Your State</Text>
+          <Text style={styles.modalHeaderText}>{getTranslation(translation, selectedLanguage, 8)}</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search city..."
+            onChangeText={handleSearch}
+            value={searchCity}
+          />
           <FlatList
-            data={states}
+            data={filteredStates}
             renderItem={renderStates}
             keyExtractor={item => item.id.toString()}
             showsVerticalScrollIndicator={false}
           />
-          <TouchableOpacity onPress={onClose}>
-            <Text style={styles.closeText}>Close</Text>
+          <TouchableOpacity onPress={handleCloseModal}>
+            <Text style={styles.closeText}>{getTranslation(translation, selectedLanguage, 9)}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -101,5 +147,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     paddingHorizontal: 9,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 10,
+    color: COLORS.dark_shade,
   },
 });

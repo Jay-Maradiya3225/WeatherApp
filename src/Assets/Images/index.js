@@ -17,4 +17,6 @@ export const AppImages = {
     wind: require('./wind.png'),
     windwave: require('./windwave.jpeg'),
     windWave: require('./windwave.png'),
+    selected: require('./selected.png'),
+    nonSelected: require('./nonSelected.png'),
 }

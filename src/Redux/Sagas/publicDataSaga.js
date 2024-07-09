@@ -9,13 +9,23 @@ export function* watch_public_data_request() {
 
 function* request_weather_data(action) {
   try {
+    let endpoint;
+
+    if (action.payload.location.latitude && action.payload.location.longitude) {
+      const { latitude, longitude } = action.payload.location;
+      endpoint = `${latitude},${longitude}`;
+    } else {
+      endpoint = action.payload.location;
+    }
+    // console.log("endpoint...",endpoint)
     const response = yield call(
       api.publicAPI,
-      action.payload.location +
+      endpoint +
         '?unitGroup=metric&key=' +
         Config.API_KEY +
         '&contentType=json',
     );
+    // console.log("response...",response?.data)
     if (response.ok && response.data) {
       yield put(public_actions.success_weather_data(response.data));
     } else {

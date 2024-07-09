@@ -9,7 +9,7 @@ const HourlyInfo = ({ data }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.timeText}>{moment(data.datetime, 'HH:mm:ss').format('h:mm A')}</Text>
-            <Text style={styles.tempText}>{data.temp}°C</Text>
+            <Text style={styles.tempText}>{`${data?.temp?.toFixed(1)}° ${data?.temperatureUnit}`}</Text>
             <Image
                 source={getWeatherIcon(data.conditions)}
                 style={styles.currentWeatherIcon}

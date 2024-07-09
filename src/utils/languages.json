@@ -1,0 +1,81 @@
+{
+    "en": {
+      "select_language": "Select Language",
+      "cancel": "Cancel",
+      "apply": "Apply",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "select_languages": "Select Languages",
+      "temperature_unit": "Temperature Unit",
+      "feel_like": "Feel Like"
+    },
+    "ta": {
+      "select_language": "மொழியை தேர்ந்தெடுக்கவும்",
+      "cancel": "ரத்து செய்",
+      "apply": "விண்ணப்பிக்க",
+      "today": "இன்று",
+      "tomorrow": "நாளை",
+      "select_languages": "மொழிகளைத் தேர்ந்தெடுக்க",
+      "feel_like": "உணர்வு"
+    },
+    "fr": {
+      "select_language": "Sélectionner la langue",
+      "cancel": "Annuler",
+      "apply": "Appliquer",
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain",
+      "select_languages": "Sélectionner les langues",
+      "temperature_unit": "Unité de température",
+      "feel_like": "Ressenti"
+    },
+    "es": {
+      "select_language": "Seleccionar idioma",
+      "cancel": "Cancelar",
+      "apply": "Aplicar",
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "select_languages": "Seleccionar idiomas",
+      "temperature_unit": "Unidad de temperatura",
+      "feel_like": "Sensación térmica"
+    },
+    "de": {
+      "select_language": "Sprache wählen",
+      "cancel": "Abbrechen",
+      "apply": "Anwenden",
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "select_languages": "Sprachen auswählen",
+      "temperature_unit": "Temperaturreinheit",
+      "feel_like": "Gefühlt"
+    },
+    "pa": {
+      "select_language": "ਭਾਸ਼ਾ ਚੁਣੋ",
+      "cancel": "ਰੱਦ ਕਰੋ",
+      "apply": "ਲਾਗੂ ਕਰੋ",
+      "today": "ਅੱਜ",
+      "tomorrow": "ਕਲ",
+      "select_languages": "ਭਾਸ਼ੇ ਚੁਣੋ",
+      "temperature_unit": "ਤਾਪਮਾਨ ਇਕਾਈ",
+      "feel_like": "ਮਹਿਸੂਸ ਕਰੋ"
+    },
+    "hi": {
+      "select_language": "भाषा चुनें",
+      "cancel": "रद्द करें",
+      "apply": "लागू करें",
+      "today": "आज",
+      "tomorrow": "कल",
+      "select_languages": "भाषाएं चुनें",
+      "temperature_unit": "तापमान इकाई",
+      "feel_like": "महसूस करें"
+    },
+    "ur": {
+      "select_language": "زبان منتخب کریں",
+      "cancel": "منسوخ",
+      "apply": "لاگو کریں",
+      "today": "آج",
+      "tomorrow": "کل",
+      "select_languages": "زبانیں منتخب کریں",
+      "temperature_unit": "درجہ حرارت کی اکائی",
+      "feel_like": "محسوس کریں"
+    }
+  }

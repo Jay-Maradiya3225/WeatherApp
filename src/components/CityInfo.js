@@ -22,7 +22,7 @@ const CityInfo = props => {
           />
           <View>
             <Text style={styles.cityInfoText}>
-              {props.city}, {props.state}
+              {props?.city}, {props?.state}
             </Text>
             <Text style={styles.todayDate}>{today.toDateString()}</Text>
           </View>
@@ -33,6 +33,8 @@ const CityInfo = props => {
       <CitySelectorModal
         visible={showModal}
         onClose={() => setShowModal(false)}
+        onSelectCity={props.onSelectCity}
+        selectedLanguage={props?.selectedLanguage}
       />
     </View>
   );

@@ -11,13 +11,23 @@ import {
   View,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
+import Geolocation from 'react-native-geolocation-service';
+import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {COLORS} from '../Assets/theme/COLOR';
 import {request_weather_data} from '../Redux/Actions/publicDataActions';
 import {getWeatherIcon} from '../utils';
 import CityInfo from './CityInfo';
 import CurrentWeather from './CurrentWeather';
 import HourlyInfo from './HourlyInfo';
+import LanguagesModal from './LanguagesModel';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {translation} from '../utils/language';
 const windowWidth = Dimensions.get('window').width;
+
+export const getTranslation = (translations, selectedLanguage, index) => {
+  const languageKeys = ['English', 'Tamil', 'Hindi', 'Punjabi', 'Urdu'];
+  return translations[index][languageKeys[selectedLanguage]] || '';
+};
 
 const WeatherForecast = () => {
   const [selectedCity, setSelectedCity] = useState('Surat');
@@ -25,13 +35,82 @@ const WeatherForecast = () => {
   const [selectedDayDate, setSelectedDayDate] = useState(
     new Date().toISOString().split('T')[0],
   );
+  const [temperatureUnit, setTemperatureUnit] = useState('C');
+  const [langModalVisible, setLangModalVisible] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState(0);
   const {weather_data, weather_loading} = useSelector(state => state.params);
-
   const dispatch = useDispatch();
 
+  const requestLocationPermission = async () => {
+    try {
+      const result = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+      if (result === RESULTS.GRANTED) {
+        fetchLocationAndWeather();
+      } else {
+        console.error('Location permission not granted');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchLocationAndWeather = () => {
+    Geolocation.getCurrentPosition(
+      (position) => {
+        // console.log(position?.coords?.latitude,position?.coords?.longitude);
+        const { latitude, longitude } = position?.coords;
+        dispatch(request_weather_data({latitude, longitude}));
+      },
+      (error) => {
+        console.error(error.code, error.message);
+        dispatch(request_weather_data(selectedCity));
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
+  };
+  
   useEffect(() => {
-    dispatch(request_weather_data(selectedCity));
-  }, []);
+    check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then(result => {
+      if (result === RESULTS.GRANTED) {
+        fetchLocationAndWeather();
+      } else {
+        requestLocationPermission();
+      }
+    });
+  }, [dispatch]);
+
+  const saveSelectedLanguage = async (index) => {
+    try {
+      await AsyncStorage.setItem('LANG', index.toString());
+      setSelectedLanguage(index);
+    } catch (error) {
+      console.error('Error saving selected language:', error);
+    }
+  };
+
+  const fetchStoredLanguage = async () => {
+    try {
+      const storedLanguageIndex = await AsyncStorage.getItem('LANG');
+      if (storedLanguageIndex !== null) {
+        setSelectedLanguage(parseInt(storedLanguageIndex, 10));
+      }
+    } catch (error) {
+      console.error('Error fetching stored language:', error);
+    }
+  };
+  useEffect(() => {
+    fetchStoredLanguage();
+  },[])
+
+  const changeCity = (city, state) => {
+    setSelectedCity(city);
+    setSelectedState(state);
+    dispatch(request_weather_data(city));
+  };
+
+  const celsiusToFahrenheit = celsius => {
+    return (celsius * 9) / 5 + 32;
+  };
 
   const renderCurrentWeatherCards = ({item}) => {
     const today = new Date();
@@ -39,12 +118,14 @@ const WeatherForecast = () => {
 
     let dateString = cardDate.toLocaleDateString();
     if (cardDate.getDate() === today.getDate()) {
-      dateString = 'Today';
+      dateString = getTranslation(translation, selectedLanguage, 3);
     } else if (cardDate.getDate() === today.getDate() + 1) {
-      dateString = 'Tomorrow';
+      dateString = getTranslation(translation, selectedLanguage, 4);
     }
 
     const weatherIcon = getWeatherIcon(item.conditions);
+    const temp =
+      temperatureUnit === 'F' ? celsiusToFahrenheit(item.temp) : item.temp;
 
     return (
       <TouchableOpacity
@@ -76,14 +157,16 @@ const WeatherForecast = () => {
               ? {color: COLORS.light_shade}
               : {},
           ]}>
-          {item.temp}°C
+          {`${temp.toFixed(1)}° ${temperatureUnit}`}
         </Text>
       </TouchableOpacity>
     );
   };
 
   const renderHourlyInfo = ({item, index}) => {
-    return <HourlyInfo data={item} />;
+    const temp =
+      temperatureUnit === 'F' ? celsiusToFahrenheit(item.temp) : item.temp;
+    return <HourlyInfo data={{...item, temp, temperatureUnit}} />;
   };
 
   const getSelectedDateHours =
@@ -94,7 +177,56 @@ const WeatherForecast = () => {
 
   return (
     <View>
-      <CityInfo city={selectedCity} state={selectedState} />
+      <CityInfo
+        city={selectedCity}
+        state={selectedState}
+        onSelectCity={changeCity}
+        selectedLanguage={selectedLanguage}
+      />
+
+      <View style={styles.toggle}>
+        <View style={styles.toggleContainer}>
+          <TouchableOpacity
+            style={[
+              styles.toggleButton,
+              temperatureUnit === 'C' ? styles.activeToggle : {},
+            ]}
+            onPress={() => setTemperatureUnit('C')}>
+            <Text
+              style={[
+                styles.toggleText,
+                temperatureUnit === 'C' ? styles.activeText : {},
+              ]}>
+              °C
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.toggleButton,
+              temperatureUnit === 'F' ? styles.activeToggle : {},
+            ]}
+            onPress={() => setTemperatureUnit('F')}>
+            <Text
+              style={[
+                styles.toggleText,
+                temperatureUnit === 'F' ? styles.activeText : {},
+              ]}>
+              °F
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.toggleContainer}>
+          <TouchableOpacity
+            style={styles.toggleButton}
+            onPress={() => {
+              setLangModalVisible(!langModalVisible);
+            }}>
+            <Text style={styles.toggleText}>
+              {getTranslation(translation, selectedLanguage, 5)}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       <ScrollView>
         {weather_loading ? (
@@ -114,7 +246,22 @@ const WeatherForecast = () => {
             )}
 
             {getSelectedDay && (
-              <CurrentWeather currentWeather={getSelectedDay} />
+              <CurrentWeather
+                currentWeather={{
+                  ...getSelectedDay,
+                  temp:
+                    temperatureUnit === 'F'
+                      ? celsiusToFahrenheit(getSelectedDay.temp)
+                      : getSelectedDay.temp,
+                  temperatureUnit,
+                  selectedLanguage,
+                  feelslike:
+                    temperatureUnit === 'F'
+                      ? celsiusToFahrenheit(getSelectedDay.feelslike)
+                      : getSelectedDay.feelslike,
+                      
+                }}
+              />
             )}
 
             <FlatList
@@ -128,6 +275,15 @@ const WeatherForecast = () => {
           </>
         )}
       </ScrollView>
+      <LanguagesModal
+        langModalVisible={langModalVisible}
+        setLangModalVisible={setLangModalVisible}
+        onSelectLang={x => {
+          setSelectedLanguage(x);
+          saveSelectedLanguage(x);
+        }}
+        selectedLanguage={selectedLanguage}
+      />
     </View>
   );
 };
@@ -216,6 +372,33 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: '100%',
     marginBottom: 70,
+  },
+  toggle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin: 5,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    paddingRight: '15%',
+  },
+  toggleButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
+  toggleText: {
+    fontSize: 16,
+    color: COLORS.primary,
+  },
+  activeToggle: {
+    backgroundColor: COLORS.primary,
+  },
+  activeText: {
+    color: '#fff',
   },
 });
 
