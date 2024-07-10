@@ -24,6 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {translation} from '../utils/language';
 const windowWidth = Dimensions.get('window').width;
 
+//Global Function to get translation text based on selected language and index
 export const getTranslation = (translations, selectedLanguage, index) => {
   const languageKeys = ['English', 'Tamil', 'Hindi', 'Punjabi', 'Urdu'];
   return translations[index][languageKeys[selectedLanguage]] || '';
@@ -41,6 +42,7 @@ const WeatherForecast = () => {
   const {weather_data, weather_loading} = useSelector(state => state.params);
   const dispatch = useDispatch();
 
+  // Function to request location permission
   const requestLocationPermission = async () => {
     try {
       const result = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
@@ -54,6 +56,7 @@ const WeatherForecast = () => {
     }
   };
 
+  // Function to fetch current location and weather data
   const fetchLocationAndWeather = () => {
     Geolocation.getCurrentPosition(
       position => {
@@ -78,6 +81,7 @@ const WeatherForecast = () => {
     });
   }, [dispatch]);
 
+  // Function to save the selected language to AsyncStorage
   const saveSelectedLanguage = async index => {
     try {
       await AsyncStorage.setItem('LANG', index.toString());
@@ -87,6 +91,7 @@ const WeatherForecast = () => {
     }
   };
 
+  // Function to fetch the stored language from AsyncStorage
   const fetchStoredLanguage = async () => {
     try {
       const storedLanguageIndex = await AsyncStorage.getItem('LANG');
@@ -97,10 +102,12 @@ const WeatherForecast = () => {
       console.error('Error fetching stored language:', error);
     }
   };
+
   useEffect(() => {
     fetchStoredLanguage();
   }, []);
 
+  // Function to change the selected city and fetch new weather data
   const changeCity = useCallback(
     (city, state) => {
       setSelectedCity(city);
@@ -110,10 +117,12 @@ const WeatherForecast = () => {
     [dispatch],
   );
 
+  // Function to convert Celsius to Fahrenheit
   const celsiusToFahrenheit = useCallback(celsius => {
     return (celsius * 9) / 5 + 32;
   }, []);
 
+  // Component to render current weather cards
   const RenderCurrentWeatherCards = React.memo(({item}) => {
     const today = new Date();
     const cardDate = new Date(item?.datetime);
@@ -165,12 +174,14 @@ const WeatherForecast = () => {
     );
   });
 
+  // Function to render hourly information
   const renderHourlyInfo = ({item, index}) => {
     const temp =
       temperatureUnit === 'F' ? celsiusToFahrenheit(item.temp) : item.temp;
     return <HourlyInfo data={{...item, temp, temperatureUnit}} />;
   };
 
+  // Get hours and day data for the selected date
   const getSelectedDateHours =
     weather_data?.days?.filter(a => a.datetime == selectedDayDate)?.[0]
       ?.hours || [];
@@ -378,7 +389,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     margin: 5,
-    marginTop:10
+    marginTop: 10,
   },
   toggleContainer: {
     flexDirection: 'row',

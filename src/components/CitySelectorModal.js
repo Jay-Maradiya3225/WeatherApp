@@ -17,11 +17,13 @@ import { translation } from '../utils/language';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
+// Modal component for selecting a city and state
 const CitySelectorModal = ({ visible, onClose, onSelectCity,selectedLanguage }) => {
   const [searchCity, setSearchCity] = useState('');
   const [filteredStates, setFilteredStates] = useState(states);
   const [filteredCities, setFilteredCities] = useState([]);
 
+  // Function to handle city search and filter states and cities based on input
   const handleSearch = (text) => {
     setSearchCity(text);
     if (text.trim() === '') {
@@ -41,6 +43,7 @@ const CitySelectorModal = ({ visible, onClose, onSelectCity,selectedLanguage }) 
     }
   };
 
+  // Function to handle closing the modal
   const handleCloseModal = () => {
     setSearchCity('');
     setFilteredStates(states);
@@ -48,12 +51,14 @@ const CitySelectorModal = ({ visible, onClose, onSelectCity,selectedLanguage }) 
     onClose();
   };
 
+  // Function to handle selecting a city and fetching its corresponding state
   const handleCitySelection = (city, stateId) => {
     const stateName = states.find(state => state.id === stateId)?.name;
     onSelectCity(city, stateName);
     handleCloseModal();
   };
 
+  // Function to render states with filtered cities
   const renderStates = ({ item }) => (
     <View>
       <Text style={styles.stateName}>{item.name}</Text>
@@ -67,7 +72,8 @@ const CitySelectorModal = ({ visible, onClose, onSelectCity,selectedLanguage }) 
       </View>
     </View>
   );
-
+  
+  // Render method for displaying cities
   const renderCities = (stateId) => ({ item }) => (
     <TouchableOpacity onPress={() => handleCitySelection(item.name, stateId)}>
       <Text style={styles.cityName}>{item.name}</Text>

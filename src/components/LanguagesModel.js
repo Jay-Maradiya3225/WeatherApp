@@ -16,6 +16,7 @@ import {translation} from '../utils/language';
 import { getTranslation } from './WeatherForecast';
 const {height, width} = Dimensions.get('window');
 
+// LanguagesModal component for selecting languages
 const LanguagesModal = ({
   langModalVisible,
   setLangModalVisible,
@@ -31,6 +32,7 @@ const LanguagesModal = ({
     {name: 'اردو', selected: false},
   ]);
 
+  // Function to handle language selection
   const onSelect = index => {
     const temp = languages.map((item, ind) => ({
       ...item,
